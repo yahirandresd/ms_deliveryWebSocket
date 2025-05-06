@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from config import Config
 import os
 db = SQLAlchemy()
+from flask_cors import CORS
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -17,7 +18,7 @@ def create_app(config_class=Config):
     from app.business.models import motorcycle, driver, shift, issue, photo
     basedir = os.path.abspath(os.path.dirname(__file__))
     app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'uploads')
-    
+    CORS(app)
     with app.app_context():
         db.create_all()
     
