@@ -82,9 +82,18 @@ class MotorcycleController:
     def _emit_coordinates(plate):
         i = 0
         total = len(coordenadas)
-        while True:
+        while tareas_activas.get(plate, False):
             coord = coordenadas[i]
-            socketio.emit(plate, coord)  # Tópico = placa
+            socketio.emit(plate, coord)
             print(f"[{plate}] Emitiendo coordenada {i}: {coord}")
             i = (i + 1) % total
             eventlet.sleep(5)
+
+    @staticmethod
+    def stop_tracking_by_plate(plate):
+        if plate in tareas_activas:
+            tareas_activas[plate] = False
+            tareas_activas.pop(plate, None)  # Limpieza
+            return {"status": "ok", "message": f"Transmisión detenida para {plate}"}
+        else:
+            return {"status": "error", "message": f"No hay transmisión activa para {plate}"}, 404

@@ -273,3 +273,7 @@ def upload_photo():
 def start_tracking(plate):
     result = MotorcycleController.start_tracking_by_plate(plate)
     return jsonify(result)
+@main_bp.route("/motorcycles/stop/<plate>", methods=["POST"])
+def stop_tracking(plate):
+    result = MotorcycleController.stop_tracking_by_plate(plate)
+    return jsonify(result)
