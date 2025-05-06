@@ -267,3 +267,9 @@ def upload_photo():
 
     data = request.form.to_dict()
     return jsonify(PhotoController.create_with_file(data, file))
+
+##########Socket
+@main_bp.route("/motorcycles/track/<plate>", methods=["POST"])
+def start_tracking(plate):
+    result = MotorcycleController.start_tracking_by_plate(plate)
+    return jsonify(result)

@@ -1,6 +1,15 @@
-from app import db
+from app import db,socketio
 from app.business.models.motorcycle import Motorcycle
 from flask import jsonify
+import json
+import eventlet
+
+# Carga las coordenadas una vez
+with open("coordinates/routes/example_1.json", "r") as f:
+    coordenadas = json.load(f)
+
+# Control de tareas activas por placa
+tareas_activas = {}
 
 class MotorcycleController:
     @staticmethod
@@ -52,3 +61,30 @@ class MotorcycleController:
         db.session.commit()
         
         return {"message": "Motorcycle deleted successfully"}, 200
+
+
+
+    @staticmethod
+    def start_tracking_by_plate(plate):
+        motorcycle = Motorcycle.query.filter_by(license_plate=plate).first()
+        if not motorcycle:
+            return {"status": "error", "message": "Motocicleta no encontrada"}, 404
+
+        if plate in tareas_activas:
+            return {"status": "ok", "message": f"Transmisión ya activa para {plate}"}
+
+        # Inicia la transmisión de coordenadas en segundo plano
+        socketio.start_background_task(MotorcycleController._emit_coordinates, plate)
+        tareas_activas[plate] = True
+        return {"status": "ok", "message": f"Transmisión iniciada para {plate}"}
+
+    @staticmethod
+    def _emit_coordinates(plate):
+        i = 0
+        total = len(coordenadas)
+        while True:
+            coord = coordenadas[i]
+            socketio.emit(plate, coord)  # Tópico = placa
+            print(f"[{plate}] Emitiendo coordenada {i}: {coord}")
+            i = (i + 1) % total
+            eventlet.sleep(5)
