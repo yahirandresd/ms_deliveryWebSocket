@@ -2,6 +2,9 @@ import eventlet
 
 eventlet.monkey_patch()
 
+import time
+import threading
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import Config
@@ -10,7 +13,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO
 
 db = SQLAlchemy()
-socketio = SocketIO(cors_allowed_origins="*", async_mode="eventlet")  # O explícitamente eventlet
+socketio = SocketIO(cors_allowed_origins="*", async_mode="eventlet")
 
 
 def create_app(config_class=Config):
@@ -32,5 +35,7 @@ def create_app(config_class=Config):
 
     with app.app_context():
         db.create_all()
+
+    # ⬇️ Aquí defines y lanzas la función que emite notificaciones
 
     return app

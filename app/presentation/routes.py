@@ -277,3 +277,11 @@ def start_tracking(plate):
 def stop_tracking(plate):
     result = MotorcycleController.stop_tracking_by_plate(plate)
     return jsonify(result)
+
+@main_bp.route('/restaurants/<int:restaurant_id>/menus', methods=['GET'])
+def get_restaurant_menus(restaurant_id):
+    return jsonify(MenuController.get_by_restaurant_id(restaurant_id))
+
+@main_bp.route('/menus/search', methods=['GET'])
+def search_menus():
+    return MenuController.search_by_product_name()

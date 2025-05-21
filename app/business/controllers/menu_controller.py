@@ -1,6 +1,10 @@
 from app import db
 from app.business.models.menu import Menu
 from flask import jsonify
+from app.business.models.product import Product
+from app.business.models.restaurant import Restaurant
+from flask import request
+
 
 class MenuController:
     @staticmethod
@@ -52,3 +56,27 @@ class MenuController:
         db.session.commit()
         
         return {"message": "Menu item deleted successfully"}, 200
+
+    @staticmethod
+    def get_by_restaurant_id(restaurant_id):
+        menus = Menu.query.filter_by(restaurant_id=restaurant_id).all()
+        return [menu.to_dict() for menu in menus]
+
+    @staticmethod
+    def search_by_product_name():
+        name = request.args.get('name')
+        if not name:
+            return jsonify({"error": "Missing 'name' parameter"}), 400
+
+        menus = Menu.query.join(Menu.product).join(Menu.restaurant) \
+            .filter(Product.name.ilike(f"%{name}%")).all()
+
+        result = []
+        for menu in menus:
+            result.append({
+                'menu_id': menu.id,
+                'product_name': menu.product.name,
+                'restaurant_name': menu.restaurant.name
+            })
+
+        return jsonify(result)
